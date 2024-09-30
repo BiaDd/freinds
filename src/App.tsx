@@ -22,8 +22,6 @@ function App() {
     if (!hasFetched) {
       fetchFriendList();
       setHasFetched(true);
-      console.log(friendList);
-
     }
   }, [hasFetched]);
 
@@ -43,8 +41,8 @@ function App() {
       <div>
         Hello friends!
         {friendList.map((friend: Friend, index: number) => (
-          <ul>
-            <li>
+          <ol>
+            <li className="list-group-item d-flex justify-content-between align-items-start">
               <FriendCard
                 key={index}
                 name={friend.name}
@@ -52,7 +50,7 @@ function App() {
                 pictureUrl={friend.picture.large}
               />
             </li>
-          </ul>
+          </ol>
         ))}
       </div>
     </>

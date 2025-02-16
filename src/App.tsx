@@ -15,42 +15,54 @@ type Friend = {
 };
 
 function App() {
-  const [friendList, setFriendList] = useState([]);
-  const [hasFetched, setHasFetched] = useState(false); // New flag to track the fetch status
+  const [friendList, setFriendList] = useState<Friend[]>([]);
+  const [offset, setOffset] = useState(1);
 
   useEffect(() => {
-    if (!hasFetched) {
-      fetchFriendList();
-      setHasFetched(true);
+    fetchFriendList();
+  }, [offset]);
+
+  useEffect(() => {
+    const handleScroll = (e: any) => {
+      const scrollHeight = e.target.documentElement.scrollHeight;
+      const currentHeight = e.target.documentElement.scrollTop + window.innerHeight;
+      if (currentHeight + 1 >= scrollHeight) {
+        setOffset(offset => offset + 1);
+      } 
     }
-  }, [hasFetched]);
+
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [])
 
   const fetchFriendList = async () => {
-    const response = await fetch("https://randomuser.me/api/?results=10");
-    if (!response.ok) {
-      throw new Error(`Error fetching friends, response status: ${response.status}`);
+
+    try {
+      const response = await fetch(`https://randomuser.me/api/?page=${offset}&results=4&seed=abc`);
+      if (!response.ok) {
+        throw new Error(`Error fetching friends, response status: ${response.status}`);
+      }
+      const data = await response.json();
+      const result = data["results"];
+      ///console.log(json["results"]);
+      setFriendList(pre => [...pre, ...result]);
     }
-    const json = await response.json();
-    ///console.log(json["results"]);
-    setFriendList(json["results"]);
-    return true;
+    catch (ex) {
+      console.log(ex);
+    }
   }
 
   return (
     <>
-      <div>
+      <div className='friend-list'>
         Hello friends!
         {friendList.map((friend: Friend, index: number) => (
-          <ol>
-            <li className="list-group-item d-flex justify-content-between align-items-start">
-              <FriendCard
-                key={index}
-                name={friend.name}
-                phone={friend.phone}
-                pictureUrl={friend.picture.large}
-              />
-            </li>
-          </ol>
+          <FriendCard
+            key={index}
+            name={friend.name}
+            phone={friend.phone}
+            pictureUrl={friend.picture.large}
+          />
         ))}
       </div>
     </>
